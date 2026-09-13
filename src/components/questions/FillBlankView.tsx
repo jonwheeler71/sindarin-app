@@ -14,8 +14,13 @@ export default function FillBlankView({
   return (
     <div>
       <p className="text-sm uppercase tracking-wide text-forest-500 font-semibold mb-2">Fill in the blank</p>
-      <p className="text-xl font-semibold text-forest-900 mb-5">{question.sentence}</p>
-      <div className="grid grid-cols-2 gap-3">
+      <p className="text-xl font-semibold text-forest-900 mb-2">{question.sentence}</p>
+      {question.word.word.includes(' ') && (
+        <p className="text-sm text-forest-600 mb-3">
+          means <span className="font-semibold">"{question.word.meaning}"</span>
+        </p>
+      )}
+      <div className="grid grid-cols-2 gap-3 mt-3">
         {question.options.map((opt) => {
           const isSelected = selected === opt
           const isCorrectOpt = opt === question.answer
