@@ -1,0 +1,58 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Nunito', system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  --color-forest-50: #f2f7ee;
+  --color-forest-100: #e0ecd6;
+  --color-forest-200: #c2dab0;
+  --color-forest-300: #9dc386;
+  --color-forest-400: #78a862;
+  --color-forest-500: #588c46;
+  --color-forest-600: #437036;
+  --color-forest-700: #35592c;
+  --color-forest-800: #2a4624;
+  --color-forest-900: #22391e;
+  --color-forest-950: #101f0f;
+
+  --color-gold-50: #fdf8ec;
+  --color-gold-100: #faedc4;
+  --color-gold-200: #f5da8d;
+  --color-gold-300: #efc356;
+  --color-gold-400: #e9ab30;
+  --color-gold-500: #d98f1e;
+  --color-gold-600: #b86e17;
+  --color-gold-700: #935117;
+  --color-gold-800: #784219;
+  --color-gold-900: #653819;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #f2f7ee 0%, #e7f0dd 100%);
+  color: #22391e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+  body {
+    background: linear-gradient(180deg, #14200f 0%, #0f1a0c 100%);
+    color: #e0ecd6;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
