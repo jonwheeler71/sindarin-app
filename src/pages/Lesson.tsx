@@ -3,9 +3,11 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { getUnit } from '../data/units'
 import { generateLesson } from '../lib/lessonGenerator'
 import { useProgress } from '../state/ProgressContext'
+import { wordKey } from '../lib/storage'
 import type { Word } from '../types'
 import Mascot from '../components/Mascot'
 import HeartsBar from '../components/HeartsBar'
+import WordIntroCard from '../components/WordIntroCard'
 import MultipleChoiceView from '../components/questions/MultipleChoiceView'
 import FillBlankView from '../components/questions/FillBlankView'
 import TranslateView from '../components/questions/TranslateView'
@@ -30,6 +32,20 @@ export default function Lesson() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unit?.id, levelNum])
 
+  // Words never answered before get a quick flashcard intro before they're quizzed.
+  const introWords = useMemo(() => {
+    const seen = new Map<string, Word>()
+    questions.forEach((q) => {
+      if (q.type === 'word-match') q.pairs.forEach((p) => seen.set(wordKey(p.word.unit, p.word.word), p.word))
+      else seen.set(wordKey(q.word.unit, q.word.word), q.word)
+    })
+    return Array.from(seen.values()).filter((w) => !state.wordStats[wordKey(w.unit, w.word)])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questions])
+
+  const [screen, setScreen] = useState<'intro' | 'quiz'>(() => (introWords.length > 0 ? 'intro' : 'quiz'))
+  const [introIndex, setIntroIndex] = useState(0)
+
   const [index, setIndex] = useState(0)
   const [hearts, setHearts] = useState(MAX_HEARTS)
   const [correctCount, setCorrectCount] = useState(0)
@@ -37,6 +53,7 @@ export default function Lesson() {
   const [lastCorrect, setLastCorrect] = useState(true)
   const [selected, setSelected] = useState<string | null>(null)
   const [status, setStatus] = useState<'active' | 'passed' | 'failed'>('active')
+  const [hintShown, setHintShown] = useState(false)
 
   if (!unit) {
     return (
@@ -51,6 +68,20 @@ export default function Lesson() {
 
   const question = questions[index]
   const progressPct = Math.round((index / questions.length) * 100)
+
+  if (screen === 'intro') {
+    return (
+      <WordIntroCard
+        word={introWords[introIndex]}
+        index={introIndex}
+        total={introWords.length}
+        onNext={() => {
+          if (introIndex + 1 < introWords.length) setIntroIndex(introIndex + 1)
+          else setScreen('quiz')
+        }}
+      />
+    )
+  }
 
   function finishLesson(finalHearts: number, finalCorrect: number) {
     const passed = finalHearts > 0
@@ -73,6 +104,7 @@ export default function Lesson() {
     setIndex(index + 1)
     setPhase('answering')
     setSelected(null)
+    setHintShown(false)
   }
 
   function handleSingleAnswer(userValue: string, word: Word, correctValue: string) {
@@ -151,6 +183,24 @@ export default function Lesson() {
         </div>
         <HeartsBar hearts={hearts} />
       </div>
+
+      {question.type !== 'word-match' && (
+        <div className="mb-4">
+          {!hintShown ? (
+            <button
+              onClick={() => setHintShown(true)}
+              className="text-sm font-semibold text-forest-500 hover:text-forest-700 flex items-center gap-1"
+            >
+              💡 Show translation
+            </button>
+          ) : (
+            <p className="text-sm text-forest-600">
+              <span className="font-semibold">{question.word.word}</span> ({question.word.pronunciation}) means{' '}
+              <span className="font-semibold">"{question.word.meaning}"</span>
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="flex-1">
         {question.type === 'multiple-choice' && (
